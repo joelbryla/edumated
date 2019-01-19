@@ -12,6 +12,12 @@ parser.add_argument(
     default=datetime.datetime.now().date(),
     help="Start date in ISO format, YYYY-MM-DD (Defaults to today)",
 )
+parser.add_argument(
+    "--end_date",
+    type=datetime.date.fromisoformat,
+    default=None,
+    help="End date in ISO format, YYYY-MM-DD",
+)
 
 parser.add_argument(
     "--days", default=1, type=int, help="Days including start date to fetch"
@@ -29,6 +35,10 @@ args = parser.parse_args()
 
 if args.weeks is not None:
     args.days = args.weeks * 7
+
+if args.end_date is not None:
+    args.days = (args.end_date - args.start_date + datetime.timedelta(days=1)).days
+
 
 with args.file as conf:
     username = conf.readline().strip()
