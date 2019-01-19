@@ -16,9 +16,7 @@ def param(data: dict):
 class Fetcher:
 
     URLS = {
-        "base": "https://edumate.rosebank.nsw.edu.au",
-        "index": "https://edumate.rosebank.nsw.edu.au/rosebank/index.php",
-        "sso-login": "https://edumate.rosebank.nsw.edu.au/rosebank/web/app.php/sso-login/?return_path=dashboard/my-edumate/",
+        "sso-login": "https://edumate.rosebank.nsw.edu.au/rosebank/web/app.php/sso-login/",
         "login": "https://rosebank-login.cloudworkengine.net/module.php/core/loginuserpass.php?",
         "accounts": "https://edumate.rosebank.nsw.edu.au/rosebank/web/app.php/saml/acs",
         "day": "https://edumate.rosebank.nsw.edu.au/rosebank/web/app.php/admin/get-day-calendar/{}/next",
@@ -31,8 +29,6 @@ class Fetcher:
         self.login()
 
     def login(self):
-        self.session.get(self.URLS["base"])
-        self.session.get(self.URLS["index"])
         sso_login = self.session.get(self.URLS["sso-login"])
         soup = bs4.BeautifulSoup(sso_login.history[1].content, "lxml")
         auth = {"AuthState": soup.a.attrs["href"][soup.a.attrs["href"].find("=") + 1 :]}
@@ -41,20 +37,14 @@ class Fetcher:
         )
         soup = bs4.BeautifulSoup(login.content, "lxml")
         saml_response = {"SAMLResponse": soup.find_all("input")[1].attrs["value"]}
-        self.session.post(
-            self.URLS["accounts"],
-            data={
-                **saml_response,
-                "RelayState": "%7B%22return_path%22%3A%22dashboard%5C%2Fmy-edumate%5C%2F%22%7D",
-            },
-        )
-        d = self.session.get(self.URLS["day"].format("2019-02-01"))
-        if d.status_code == 200:
+        self.session.post(self.URLS["accounts"], data=saml_response)
+        test = self.session.get(self.URLS["day"].format("2019-02-01"))
+        if test.status_code == 200 and test.json():
             print("Login Successful")
 
     def get_dates(self, dates):
         data = []
-        with futures.ThreadPoolExecutor(max_workers=15) as executor:
+        with futures.ThreadPoolExecutor(max_workers=20) as executor:
             to_do = []
             for date in dates:
                 date_str = date.strftime("%Y-%m-%d")
@@ -123,6 +113,9 @@ class Fetcher:
     def time_to_datetime(self, time):
         # "2019-02-01 08:42:00.000000"
         return datetime.strptime(time, "%Y-%m-%d %H:%M:%S.000000")
+
+    def __repr__(self):
+        return f"<Fetcher username={self.credentials['username']} password=...>"
 
 
 if __name__ == "__main__":

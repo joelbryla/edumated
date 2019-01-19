@@ -89,7 +89,3 @@ class CalendarTool:
         event = (
             self.service.events().insert(calendarId=self.CAL_ID, body=event).execute()
         )
-
-
-if __name__ == "__main__":
-    cal = CalendarTool()
