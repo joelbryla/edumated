@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
-from pprint import pprint
-import time
-
+import urllib3
 import bs4
 from tqdm import tqdm
 import requests
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 def param(data: dict):
@@ -55,8 +55,6 @@ class Fetcher:
         for date in tqdm(dates):
             date_str = date.strftime("%Y-%m-%d")
             r = self.session.get(self.URLS["day"].format(date_str))
-            # print(r)
-            # print(r.text)
             data.append(r.json())
 
         return data
@@ -72,7 +70,7 @@ class Fetcher:
             "English": 6,
             "Chemistry": 3,
         }
-        class_colour.get(name, 8)
+        return class_colour.get(name, 8)
 
     def get_simple_dates(self, dates):
         dates_data = self.get_dates(dates)
@@ -90,7 +88,9 @@ class Fetcher:
                         "colour": self.get_colour(event["activityName"].split(" ")[1]),
                         "room": event["activityName"].split(" (")[-1].rstrip(")"),
                         "period": event["period"],
-                        "start_time": self.time_to_datetime(event["startDateTime"]["date"]),
+                        "start_time": self.time_to_datetime(
+                            event["startDateTime"]["date"]
+                        ),
                         "end_time": self.time_to_datetime(event["endDateTime"]["date"]),
                         "teacher": event["links"][0]["href"]
                         .split("bcc=")[1]
@@ -119,4 +119,3 @@ if __name__ == "__main__":
         username = file.readline().strip()
         password = file.readline().strip()
     a = Fetcher(username, password)
-    # pprint(a.get_week(datetime(2019,2,4)))
