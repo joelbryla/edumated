@@ -60,4 +60,4 @@ print(
 edumate_day_data = fetcher.get_simple_dates(dates)
 
 print("Adding to Google Calendar")
-[cal.make_events(day) for day in tqdm(edumate_day_data)]
+cal.make_all_events(edumate_day_data)

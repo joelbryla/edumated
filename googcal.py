@@ -2,6 +2,8 @@ from __future__ import print_function
 from datetime import datetime
 import pickle
 import os.path
+from concurrent import futures
+from tqdm import tqdm
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -96,3 +98,20 @@ class CalendarTool:
         event = (
             self.service.events().insert(calendarId=self.CAL_ID, body=event).execute()
         )
+
+    def make_all_events(self, dates):
+        for date in tqdm(dates):
+            self.make_events(date)
+
+        # with futures.ThreadPoolExecutor(max_workers=5) as executor:
+        #     to_do = []
+        #     for date in dates:
+        #         future = executor.submit(self.make_events, (date))
+        #         to_do.append(future)
+
+        #     [
+        #         future
+        #         for future in tqdm(
+        #             futures.as_completed(to_do), unit="day", total=len(dates)
+        #         )
+        #     ]
