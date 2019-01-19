@@ -29,17 +29,17 @@ class Fetcher:
         self.login()
 
     def login(self):
-        e = self.session.get(self.URLS["base"])
-        n = self.session.get(self.URLS["index"])
-        o = self.session.get(self.URLS["sso-login"])
-        soup = bs4.BeautifulSoup(o.history[1].content, "lxml")
+        self.session.get(self.URLS["base"])
+        self.session.get(self.URLS["index"])
+        sso_login = self.session.get(self.URLS["sso-login"])
+        soup = bs4.BeautifulSoup(sso_login.history[1].content, "lxml")
         auth = {"AuthState": soup.a.attrs["href"][soup.a.attrs["href"].find("=") + 1 :]}
-        l = self.session.post(
-            self.URLS["login"] + param(auth) + "&" + param(self.credentials)
+        login = self.session.post(
+            self.URLS["login"] + param({**auth, **self.credentials})
         )
-        soup = bs4.BeautifulSoup(l.content, "lxml")
+        soup = bs4.BeautifulSoup(login.content, "lxml")
         saml_response = {"SAMLResponse": soup.find_all("input")[1].attrs["value"]}
-        ol = self.session.post(
+        self.session.post(
             self.URLS["accounts"],
             data={
                 **saml_response,
@@ -52,10 +52,19 @@ class Fetcher:
 
     def get_dates(self, dates):
         data = []
-        for date in tqdm(dates):
-            date_str = date.strftime("%Y-%m-%d")
-            r = self.session.get(self.URLS["day"].format(date_str))
-            data.append(r.json())
+        with futures.ThreadPoolExecutor(max_workers=15) as executor:
+            to_do = []
+            for date in dates:
+                date_str = date.strftime("%Y-%m-%d")
+                future = executor.submit(
+                    self.session.get, self.URLS["day"].format(date_str)
+                )
+                to_do.append(future)
+
+            for future in tqdm(
+                futures.as_completed(to_do), unit="day", total=len(dates)
+            ):
+                data.append(future.result().json())
 
         return data
 
