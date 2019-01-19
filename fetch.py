@@ -5,6 +5,8 @@ import bs4
 from tqdm import tqdm
 import requests
 import urllib3
+import re
+from concurrent import futures
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -83,9 +85,13 @@ class Fetcher:
             formatted_data.append(
                 [
                     {
-                        "name": "".join(event["activityName"].split("(")[:-1])
-                        .replace(")", "")
-                        .strip(),
+                        "name": re.sub(
+                            "^([1-10])\w+",
+                            "",
+                            "".join(event["activityName"].split("(")[:-1]).replace(
+                                ")", ""
+                            ),
+                        ).strip(),
                         "colour": self.get_colour(event["activityName"].split(" ")[1]),
                         "room": event["activityName"].split(" (")[-1].rstrip(")"),
                         "period": event["period"],
