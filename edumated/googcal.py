@@ -6,6 +6,7 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from rfc3339 import rfc3339
+from tqdm import tqdm
 
 
 class CalendarTool:
@@ -89,3 +90,7 @@ class CalendarTool:
         event = (
             self.service.events().insert(calendarId=self.CAL_ID, body=event).execute()
         )
+
+    def make_all_events(self, dates):
+        for date in tqdm(dates):
+            self.make_events(date)
