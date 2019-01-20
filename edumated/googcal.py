@@ -19,7 +19,17 @@ class CalendarTool:
         Prints the start and name of the next 10 events on the user's calendar.
         """
         self.CAL_ID = calendar_id
-        # self.CRED_FILE =
+        self.CRED_FILE = {
+            "installed": {
+                "client_id": "260443697659-7fqv4qks7t7536sacm81ujk7n4bjfssf.apps.googleusercontent.com",
+                "project_id": "edumated-1547966773995",
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                "client_secret": "GgYorkYBYUqfMBcp81HbFYpB",
+                "redirect_uris": ["urn:ietf:wg:oauth:2.0:oob", "http://localhost"],
+            }
+        }
 
         self.pickle = conf_folder + "token.pickle"
 
