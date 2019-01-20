@@ -2,8 +2,7 @@
 import argparse
 import datetime
 import getpass
-from os import path
-
+from os import path, mkdir
 import pandas as pd
 
 from .fetch import Fetcher
@@ -31,13 +30,10 @@ def main():
     parser.add_argument("--weeks", type=int, help="Weeks including start date to fetch")
 
     parser.add_argument(
-        "--conf_file",
-        default=path.expanduser("~") + "/.educonf",
+        "--conf_folder",
+        default=path.expanduser("~") + "/.edumated/",
         type=str,
-        help="Config file containg calender id (default is ~/.educonf",
-    )
-    parser.add_argument(
-        "--pass_file", default=None, type=open, help="File containg username and password"
+        help="Config file containg calender id (default is ~/.edumated/",
     )
 
     args = parser.parse_args()
@@ -45,33 +41,41 @@ def main():
     if args.weeks is not None:
         args.days = args.weeks * 7
 
-    if args.end_date is not None:
-        args.days = (args.end_date - args.start_date + datetime.timedelta(days=1)).days
+    one_day_offset = datetime.timedelta(days=1)
 
-    if args.pass_file is not None:
-        with args.pass_file as conf:
-            username = conf.readline().strip()
-            password = conf.readline().strip()
-    else:
+    if args.end_date is not None:
+        args.days = args.end_date - args.start_date + one_day_offset.days
+
+    if not path.isdir(args.conf_folder):
+        mkdir(args.conf_folder)
+
+    pass_file = args.conf_folder + "pass"
+    cal_file = args.conf_folder + "cal"
+
+    if not path.isfile(pass_file):
         username = input("Username: ")
         password = getpass.getpass(prompt="Password: ")
+        with open(pass_file, "w+") as file:
+            file.write(username + "\n")
+            file.write(password)
 
-    if not path.isfile(args.conf_file):
+    with open(pass_file) as pass_f:
+        username = pass_f.readline().strip()
+        password = pass_f.readline().strip()
+
+    if not path.isfile(cal_file):
         cal_id = input("Google Calendar ID: ")
-        with open(args.conf_file, "w+") as file:
+        with open(cal_file, "w+") as file:
             file.write(cal_id)
 
-    with open(args.conf_file) as conf:
+    with open(cal_file) as conf:
         calendar_id = conf.readline().strip()
 
-    cal = CalendarTool(calendar_id)
+    cal = CalendarTool(calendar_id, args.conf_folder)
     fetcher = Fetcher(username, password)
-
-    one_day_offset = datetime.timedelta(days=1)
 
     args.start_date = args.start_date - one_day_offset
     dates = pd.date_range(args.start_date, periods=args.days)
-
 
     print(
         f"Fetching Events: {dates[0].date()+one_day_offset} to {dates[-1].date()+one_day_offset}"

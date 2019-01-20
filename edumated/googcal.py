@@ -13,31 +13,32 @@ class CalendarTool:
 
     # If modifying these scopes, delete the file token.pickle.
     SCOPES = ["https://www.googleapis.com/auth/calendar"]
-    CRED_FILE = "credentials.json"
 
-    def __init__(self, calendar_id):
+    def __init__(self, calendar_id, conf_folder):
         """Shows basic usage of the Google Calendar API.
         Prints the start and name of the next 10 events on the user's calendar.
         """
         self.CAL_ID = calendar_id
+        # self.CRED_FILE =
+
+        self.pickle = conf_folder + "token.pickle"
+
         creds = None
         # The file token.pickle stores the user's access and refresh tokens, and is
         # created automatically when the authorization flow completes for the first
         # time.
-        if os.path.exists("token.pickle"):
-            with open("token.pickle", "rb") as token:
+        if os.path.exists(self.pickle):
+            with open(self.pickle, "rb") as token:
                 creds = pickle.load(token)
         # If there are no (valid) credentials available, let the user log in.
         if not creds or not creds.valid:
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
             else:
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    self.CRED_FILE, self.SCOPES
-                )
+                flow = InstalledAppFlow.from_client_config(self.CRED_FILE, self.SCOPES)
                 creds = flow.run_local_server()
             # Save the credentials for the next run
-            with open("token.pickle", "wb") as token:
+            with open(self.pickle, "wb") as token:
                 pickle.dump(creds, token)
 
         self.service = build("calendar", "v3", credentials=creds)
