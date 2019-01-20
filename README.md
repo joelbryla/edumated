@@ -1,4 +1,4 @@
-# Edumated ![PyPI Version](https://img.shields.io/pypi/v/edumated.svg)(https://pypi.org/project/edumated)
+# Edumated [![PyPI Version](https://img.shields.io/pypi/v/edumated.svg)](https://pypi.org/project/edumated)
 > When you've check mated ♔ [edumate](https://www.edumate.com.au/)
 
 
