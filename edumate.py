@@ -1,9 +1,10 @@
 from googcal import CalendarTool
 import pandas as pd
-from tqdm import tqdm
 import argparse
 import datetime
 from fetch import Fetcher
+import getpass
+from os import path
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -25,10 +26,13 @@ parser.add_argument(
 parser.add_argument("--weeks", type=int, help="Weeks including start date to fetch")
 
 parser.add_argument(
-    "--file",
-    default="pass",
-    type=open,
-    help="File containg username, password and calender id",
+    "--conf_file",
+    default=path.expanduser("~") + "/.educonf",
+    type=str,
+    help="Config file containg calender id (default is ~/.educonf",
+)
+parser.add_argument(
+    "--pass_file", default=None, type=open, help="File containg username and password"
 )
 
 args = parser.parse_args()
@@ -39,10 +43,20 @@ if args.weeks is not None:
 if args.end_date is not None:
     args.days = (args.end_date - args.start_date + datetime.timedelta(days=1)).days
 
+if args.pass_file is not None:
+    with args.pass_file as conf:
+        username = conf.readline().strip()
+        password = conf.readline().strip()
+else:
+    username = input("Username: ")
+    password = getpass.getpass(prompt="Password: ")
 
-with args.file as conf:
-    username = conf.readline().strip()
-    password = conf.readline().strip()
+if not path.isfile(args.conf_file):
+    cal_id = input("Google Calendar ID: ")
+    with open(args.conf_file, "w+") as file:
+        file.write(cal_id)
+
+with open(args.conf_file) as conf:
     calendar_id = conf.readline().strip()
 
 cal = CalendarTool(calendar_id)
