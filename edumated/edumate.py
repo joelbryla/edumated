@@ -44,7 +44,7 @@ def main():
     one_day_offset = datetime.timedelta(days=1)
 
     if args.end_date is not None:
-        args.days = args.end_date - args.start_date + one_day_offset.days
+        args.days = (args.end_date - args.start_date + one_day_offset).days
 
     if not path.isdir(args.conf_folder):
         mkdir(args.conf_folder)
