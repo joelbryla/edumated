@@ -6,7 +6,6 @@ from tqdm import tqdm
 import requests
 import urllib3
 import re
-from concurrent import futures
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
