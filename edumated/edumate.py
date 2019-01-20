@@ -31,7 +31,7 @@ def main():
 
     parser.add_argument(
         "--conf_folder",
-        default=path.expanduser("~") + "/.edumated/",
+        default=path.join(path.expanduser("~"), "/.edumated/"),
         type=str,
         help="Config file containg calender id (default is ~/.edumated/",
     )
