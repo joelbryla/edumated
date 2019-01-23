@@ -1,11 +1,11 @@
+import re
 from concurrent import futures
 from datetime import datetime, timedelta
 
 import bs4
-from tqdm import tqdm
 import requests
 import urllib3
-import re
+from tqdm import tqdm
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -22,30 +22,36 @@ class Fetcher:
         "accounts": "https://edumate.rosebank.nsw.edu.au/rosebank/web/app.php/saml/acs",
         "day": "https://edumate.rosebank.nsw.edu.au/rosebank/web/app.php/admin/get-day-calendar/{}/next",
     }
+    MAX_WORKERS = 20
 
     def __init__(self, username: str, password: str):
         self.session = requests.Session()
         self.session.verify = False
         self.credentials = {"username": username, "password": password}
         self.login()
+        if self.successful_login:
+            print("Successful login")
+        else:
+            print("Login failed")
 
     def login(self):
         sso_login = self.session.get(self.URLS["sso-login"])
-        soup = bs4.BeautifulSoup(sso_login.history[1].content, "lxml")
+        soup = bs4.BeautifulSoup(sso_login.history[1].content, "html.parser")
         auth = {"AuthState": soup.a.attrs["href"][soup.a.attrs["href"].find("=") + 1 :]}
         login = self.session.post(
             self.URLS["login"] + param({**auth, **self.credentials})
         )
-        soup = bs4.BeautifulSoup(login.content, "lxml")
+        soup = bs4.BeautifulSoup(login.content, "html.parser")
         saml_response = {"SAMLResponse": soup.find_all("input")[1].attrs["value"]}
         self.session.post(self.URLS["accounts"], data=saml_response)
-        test = self.session.get(self.URLS["day"].format("2019-02-01"))
-        if test.status_code == 200 and test.json():
-            print("Login Successful")
 
-    def get_dates(self, dates):
+    def successful_login(self):
+        test = self.session.get(self.URLS["day"].format("2019-02-01"))
+        return test.status_code == 200 and test.json():
+
+    def get_dates(self, dates: iter):
         data = []
-        with futures.ThreadPoolExecutor(max_workers=20) as executor:
+        with futures.ThreadPoolExecutor(max_workers=self.MAX_WORKERS) as executor:
             to_do = []
             for date in dates:
                 date_str = date.strftime("%Y-%m-%d")
@@ -121,10 +127,3 @@ class Fetcher:
 
     def __repr__(self):
         return f"<Fetcher username={self.credentials['username']} password=...>"
-
-
-if __name__ == "__main__":
-    with open("pass") as file:
-        username = file.readline().strip()
-        password = file.readline().strip()
-    a = Fetcher(username, password)
