@@ -4,5 +4,4 @@ google-auth-httplib2
 google-auth-oauthlib
 requests
 tqdm
-pandas
 bs4
