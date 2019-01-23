@@ -15,7 +15,6 @@ Or to get the bleeding edge version
 To be able to use this tool you'll first have to create a calendar that you will
 add the events to.  To create a new google calendar simply click [here](https://calendar.google.com/calendar/r/settings/createcalendar).
 Once you've created the calendar click on the configure button and scroll down
-to the *Integrate Calendar* and copy the Calendar ID.  Next you will have to
-enable the Google Calendar API to do that go [here](https://developers.google.com/calendar/quickstart/python)
-and click the *ENABLE GOOGLE CALENDAR API*.  And after that save the credentials
-locally.
+to the *Integrate Calendar* and copy the Calendar ID.  Now when running
+edumated, when it asks for your calendar id input the one you just copied
+before.
