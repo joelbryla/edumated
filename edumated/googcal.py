@@ -1,10 +1,10 @@
-from __future__ import print_function
 import datetime
+import os
 import pickle
-import os.path
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
+
 from google.auth.transport.requests import Request
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
 from rfc3339 import rfc3339
 from tqdm import tqdm
 
@@ -70,7 +70,7 @@ class CalendarTool:
 
     def del_day(self, date):
         for event in self.cal_events:
-            event_date = datetime.strptime(
+            event_date = datetime.datetime.strptime(
                 event["start"]["dateTime"].split("+")[0], "%Y-%m-%dT%H:%M:%S"
             ).date()
 
