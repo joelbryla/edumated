@@ -28,8 +28,7 @@ def main():
 
     calendar = CalendarTool(calendar_id, args.conf_folder)
     fetcher = Fetcher(username, password)
-    one_day_offset = timedelta(days=1)
-    dates = daterange(args.start_date - one_day_offset, args.end_date)
+    dates = daterange(args.start_date, args.end_date)
 
     print(f"Fetching Events: {args.start_date} to {args.end_date}")
     classes = fetcher.get_simple_dates(dates)

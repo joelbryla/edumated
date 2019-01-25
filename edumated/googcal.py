@@ -83,6 +83,7 @@ class CalendarTool:
         return self.service.calendarList().list(pageToken=None).execute()
 
     def make_event(self, event_data):
+        timezone = event_data["timezone"]
         event = {
             "summary": event_data["period"] + ". " + event_data["name"],
             "location": event_data["room"],
@@ -90,11 +91,11 @@ class CalendarTool:
             "colorId": event_data["colour"],
             "start": {
                 "dateTime": rfc3339(event_data["start_time"]),
-                "timeZone": "Australia/Sydney",
+                "timeZone": timezone,
             },
             "end": {
                 "dateTime": rfc3339(event_data["end_time"]),
-                "timeZone": "Australia/Sydney",
+                "timeZone": timezone,
             },
         }
 

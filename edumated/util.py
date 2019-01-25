@@ -13,25 +13,28 @@ def parseargs():
     parser.add_argument(
         "--start-date",
         default=datetime.datetime.now().date(),
+        type=datetime.date.fromisoformat,
         help="Start date in ISO format, YYYY-MM-DD (Default: today)",
     )
     parser.add_argument(
-        "--end-date", type=str, help="End date in ISO format, YYYY-MM-DD"
+        "--end-date",
+        type=datetime.date.fromisoformat,
+        help="End date in ISO format, YYYY-MM-DD",
     )
     parser.add_argument("--weeks", type=int, help="Weeks including start date to fetch")
     parser.add_argument(
-        "--days", default=1, help="Days including start date to fetch (Default: 1)"
+        "--days",
+        default=1,
+        type=int,
+        help="Days including start date to fetch (Default: 1)",
     )
     args = parser.parse_args()
 
-    if args.end_date:
-        args.end_date = datetime.datetime.strptime(args.end_date, "%Y-%m-%d")
-
-    if args.days:
+    if not args.end_date:
         args.end_date = args.start_date + datetime.timedelta(days=args.days)
 
-    if args.weeks:
-        args.end_date = args.start_date + datetime.timedelta(weeks=args.weeks)
+        if args.weeks:
+            args.end_date = args.start_date + datetime.timedelta(weeks=args.weeks)
 
     if not path.isdir(args.conf_folder):
         mkdir(args.conf_folder)

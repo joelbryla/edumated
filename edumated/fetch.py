@@ -47,7 +47,7 @@ class Fetcher:
 
     def successful_login(self):
         test = self.session.get(self.URLS["day"].format("2019-02-01"))
-        return test.status_code == 200 and test.json():
+        return test.status_code == 200 and test.json()
 
     def get_dates(self, dates: iter):
         data = []
@@ -107,6 +107,7 @@ class Fetcher:
                         "teacher": event["links"][0]["href"]
                         .split("bcc=")[1]
                         .split("@")[0],
+                        "timezone": event["startDateTime"]["timezone"].title(),
                     }
                     for event in events
                     if event["eventType"] == "class"
