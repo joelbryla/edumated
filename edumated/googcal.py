@@ -1,5 +1,5 @@
 import datetime
-import os
+from os import path
 import pickle
 
 from google.auth.transport.requests import Request
@@ -31,13 +31,12 @@ class CalendarTool:
             }
         }
 
-        self.pickle = conf_folder + "token.pickle"
-
+        self.pickle = path.join(conf_folder, "token.pickle")
         creds = None
         # The file token.pickle stores the user's access and refresh tokens, and is
         # created automatically when the authorization flow completes for the first
         # time.
-        if os.path.exists(self.pickle):
+        if path.exists(self.pickle):
             with open(self.pickle, "rb") as token:
                 creds = pickle.load(token)
         # If there are no (valid) credentials available, let the user log in.
@@ -93,10 +92,7 @@ class CalendarTool:
                 "dateTime": rfc3339(event_data["start_time"]),
                 "timeZone": timezone,
             },
-            "end": {
-                "dateTime": rfc3339(event_data["end_time"]),
-                "timeZone": timezone,
-            },
+            "end": {"dateTime": rfc3339(event_data["end_time"]), "timeZone": timezone},
         }
 
         event = (
