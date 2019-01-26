@@ -1,3 +1,4 @@
+from concurrent import futures
 import datetime
 from os import path
 import pickle
@@ -107,5 +108,15 @@ class CalendarTool:
         )
 
     def make_all_events(self, dates):
-        for date in tqdm(dates):
-            self.make_events(date)
+        with futures.ThreadPoolExecutor(max_workers=10) as executor:
+            to_do = []
+            for date in dates:
+                future = executor.submit(
+                    self.make_events, date
+                )
+                to_do.append(future)
+
+            for future in tqdm(
+                futures.as_completed(to_do), unit="day", total=len(dates)
+            ):
+                pass
