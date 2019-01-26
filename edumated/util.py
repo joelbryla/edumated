@@ -1,6 +1,7 @@
 import argparse
 import datetime
 from os import path, mkdir
+from shutil import rmtree
 
 
 def parseargs():
@@ -28,13 +29,26 @@ def parseargs():
         type=int,
         help="Days including start date to fetch (Default: 1)",
     )
+    parser.add_argument("--reset", action="store_true", help="Deletes config files")
+
     args = parser.parse_args()
 
     if not args.end_date:
-        args.end_date = args.start_date + datetime.timedelta(days=args.days) - datetime.timedelta(days=1)
+        args.end_date = (
+            args.start_date
+            + datetime.timedelta(days=args.days)
+            - datetime.timedelta(days=1)
+        )
 
         if args.weeks:
-            args.end_date = args.start_date + datetime.timedelta(weeks=args.weeks) - datetime.timedelta(days=1)
+            args.end_date = (
+                args.start_date
+                + datetime.timedelta(weeks=args.weeks)
+                - datetime.timedelta(days=1)
+            )
+
+    if args.reset:
+        rmtree(args.conf_folder)
 
     if not path.isdir(args.conf_folder):
         mkdir(args.conf_folder)
