@@ -31,10 +31,10 @@ def parseargs():
     args = parser.parse_args()
 
     if not args.end_date:
-        args.end_date = args.start_date + datetime.timedelta(days=args.days)
+        args.end_date = args.start_date + datetime.timedelta(days=args.days) - datetime.timedelta(days=1)
 
         if args.weeks:
-            args.end_date = args.start_date + datetime.timedelta(weeks=args.weeks)
+            args.end_date = args.start_date + datetime.timedelta(weeks=args.weeks) - datetime.timedelta(days=1)
 
     if not path.isdir(args.conf_folder):
         mkdir(args.conf_folder)
@@ -44,6 +44,6 @@ def parseargs():
 
 def daterange(start_date, end_date):
     dates = []
-    for n in range(int((end_date - start_date).days)):
+    for n in range(int((end_date - start_date).days) + 1):
         dates.append(start_date + datetime.timedelta(n))
     return dates
