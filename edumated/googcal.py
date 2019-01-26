@@ -52,11 +52,18 @@ class CalendarTool:
 
         self.service = build("calendar", "v3", credentials=creds)
 
-        self.cal_events = (
-            self.service.events()
-            .list(calendarId=self.CAL_ID, pageToken=None)
-            .execute()["items"]
-        )
+        self.cal_events = []
+        page_token = None
+        while True:
+            events = (
+                self.service.events()
+                .list(calendarId=self.CAL_ID, pageToken=page_token)
+                .execute()
+            )
+            self.cal_events += events["items"]
+            page_token = events.get("nextPageToken")
+            if not page_token:
+                break
 
     def make_events(self, events_data):
         try:

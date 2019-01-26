@@ -30,7 +30,7 @@ def main():
     fetcher = Fetcher(username, password)
     dates = daterange(args.start_date, args.end_date)
 
-    print(f"Fetching Events: {args.start_date} to {args.end_date}")
+    print(f"Fetching Events: {dates[0]} to {dates[-1]}")
     classes = fetcher.get_simple_dates(dates)
 
     print("Adding to Google Calendar")

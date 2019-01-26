@@ -54,6 +54,7 @@ class Fetcher:
         with futures.ThreadPoolExecutor(max_workers=self.MAX_WORKERS) as executor:
             to_do = []
             for date in dates:
+                date = date - timedelta(days=1)
                 date_str = date.strftime("%Y-%m-%d")
                 future = executor.submit(
                     self.session.get, self.URLS["day"].format(date_str)
