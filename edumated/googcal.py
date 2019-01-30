@@ -108,15 +108,17 @@ class CalendarTool:
         )
 
     def make_all_events(self, dates):
-        with futures.ThreadPoolExecutor(max_workers=10) as executor:
-            to_do = []
-            for date in dates:
-                future = executor.submit(
-                    self.make_events, date
-                )
-                to_do.append(future)
+        # with futures.ThreadPoolExecutor(max_workers=10) as executor:
+        #     to_do = []
+        #     for date in dates:
+        #         future = executor.submit(
+        #             self.make_events, date
+        #         )
+        #         to_do.append(future)
 
-            for future in tqdm(
-                futures.as_completed(to_do), unit="day", total=len(dates)
-            ):
-                pass
+        #     for future in tqdm(
+        #         futures.as_completed(to_do), unit="day", total=len(dates)
+        #     ):
+        #         pass
+        for date in tqdm(dates):
+            self.make_events(date)
