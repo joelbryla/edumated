@@ -61,9 +61,7 @@ class Fetcher:
                 )
                 to_do.append(future)
 
-            for future in tqdm(
-                futures.as_completed(to_do), unit="day", total=len(dates)
-            ):
+            for future in tqdm(futures.as_completed(to_do), total=len(dates)):
                 data.append(future.result().json())
 
         return data
@@ -78,6 +76,7 @@ class Fetcher:
             "Studies": 10,  # religon
             "English": 6,
             "Chemistry": 3,
+            "Food": 10,
         }
         return class_colour.get(name, 8)
 
@@ -88,32 +87,48 @@ class Fetcher:
         for day in dates_data:
             events = day["events"]
 
-            formatted_data.append(
-                [
-                    {
-                        "name": re.sub(
-                            "^([1-10])\w+",
-                            "",
-                            "".join(event["activityName"].split("(")[:-1]).replace(
-                                ")", ""
-                            ),
-                        ).strip(),
-                        "colour": self.get_colour(event["activityName"].split(" ")[1]),
-                        "room": event["activityName"].split(" (")[-1].rstrip(")"),
-                        "period": event["period"],
-                        "start_time": self.time_to_datetime(
-                            event["startDateTime"]["date"]
-                        ),
-                        "end_time": self.time_to_datetime(event["endDateTime"]["date"]),
-                        "teacher": event["links"][0]["href"]
-                        .split("bcc=")[1]
-                        .split("@")[0],
-                        "timezone": event["startDateTime"]["timezone"].title(),
-                    }
-                    for event in events
-                    if event["eventType"] == "class"
-                ]
-            )
+            day_data = []
+
+            day_data += [
+                {
+                    "name": event["period"]
+                    + ". "
+                    + re.sub(
+                        "^([1-10])\w+",
+                        "",
+                        "".join(event["activityName"].split("(")[:-1]).replace(")", ""),
+                    ).strip(),
+                    "colour": self.get_colour(event["activityName"].split(" ")[1]),
+                    "room": event["activityName"].split(" (")[-1].rstrip(")"),
+                    "start_time": self.time_to_datetime(event["startDateTime"]["date"]),
+                    "end_time": self.time_to_datetime(event["endDateTime"]["date"]),
+                    "description": event["links"][0]["href"]
+                    .split("bcc=")[1]
+                    .split("@")[0],
+                    "timezone": event["startDateTime"]["timezone"].title(),
+                }
+                for event in events
+                if event["eventType"] == "class"
+            ]
+
+            day_data += [
+                {
+                    "name": re.sub(
+                        "^([1-10])\w+",
+                        "",
+                        "".join(event["activityName"].split("(")[:-1]).replace(")", ""),
+                    ).strip(),
+                    "colour": self.get_colour(event["activityName"].split(" ")[1]),
+                    "start_time": self.time_to_datetime(event["startDateTime"]["date"]),
+                    "description": "",
+                    "end_time": self.time_to_datetime(event["endDateTime"]["date"]),
+                    "timezone": event["startDateTime"]["timezone"].title(),
+                    "room": "Rosebank College",
+                }
+                for event in events
+                if event["eventType"] == "event"
+            ]
+            formatted_data.append(day_data)
 
         return formatted_data
 

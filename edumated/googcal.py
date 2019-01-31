@@ -86,15 +86,13 @@ class CalendarTool:
                     calendarId=self.CAL_ID, eventId=event["id"]
                 ).execute()
 
-    def get_cals(self):
-        return self.service.calendarList().list(pageToken=None).execute()
-
     def make_event(self, event_data):
         timezone = event_data["timezone"]
+
         event = {
-            "summary": event_data["period"] + ". " + event_data["name"],
+            "summary": event_data["name"],
             "location": event_data["room"],
-            "description": event_data["teacher"],
+            "description": event_data["description"],
             "colorId": event_data["colour"],
             "start": {
                 "dateTime": rfc3339(event_data["start_time"]),
@@ -102,7 +100,6 @@ class CalendarTool:
             },
             "end": {"dateTime": rfc3339(event_data["end_time"]), "timeZone": timezone},
         }
-
         event = (
             self.service.events().insert(calendarId=self.CAL_ID, body=event).execute()
         )
