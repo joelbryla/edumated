@@ -6,6 +6,7 @@ import bs4
 import requests
 import urllib3
 from tqdm import tqdm
+from pprint import pprint
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -113,17 +114,13 @@ class Fetcher:
 
             day_data += [
                 {
-                    "name": re.sub(
-                        "^([1-10])\w+",
-                        "",
-                        "".join(event["activityName"].split("(")[:-1]).replace(")", ""),
-                    ).strip(),
+                    "name": (event["activityName"]).lstrip("Event: ").strip(),
                     "colour": self.get_colour(event["activityName"].split(" ")[1]),
                     "start_time": self.time_to_datetime(event["startDateTime"]["date"]),
                     "description": "",
                     "end_time": self.time_to_datetime(event["endDateTime"]["date"]),
                     "timezone": event["startDateTime"]["timezone"].title(),
-                    "room": "Rosebank College",
+                    "room": "",
                 }
                 for event in events
                 if event["eventType"] == "event"
