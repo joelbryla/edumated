@@ -27,7 +27,7 @@ def main():
             username, password, calendar_id = map(lambda l: l.strip(), f.readlines())
 
     calendar = CalendarTool(calendar_id, args.conf_folder)
-    fetcher = Fetcher(username, password)
+    fetcher = Fetcher(username, password, args.conf_folder)
     dates = daterange(args.start_date, args.end_date)
 
     print(f"Fetching Events: {dates[0]} to {dates[-1]}")

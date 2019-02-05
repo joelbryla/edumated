@@ -1,4 +1,5 @@
 import re
+from os import path
 from concurrent import futures
 from datetime import datetime, timedelta
 
@@ -6,7 +7,6 @@ import bs4
 import requests
 import urllib3
 from tqdm import tqdm
-from pprint import pprint
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -25,15 +25,51 @@ class Fetcher:
     }
     MAX_WORKERS = 20
 
-    def __init__(self, username: str, password: str):
+    colour_to_code = {
+        "tomato": 11,
+        "flamingo": 4,
+        "tangerine": 6,
+        "banana": 5,
+        "sage": 2,
+        "basil": 10,
+        "peacock": 7,
+        "blueberry": 9,
+        "lavender": 1,
+        "grape": 3,
+        "graphite": 8,
+    }
+
+    colours = {}
+
+    def __init__(self, username: str, password: str, conf_folder):
+        self.colour_conf = path.join(conf_folder, "colour_config.txt")
+
+        if path.isfile(self.colour_conf):
+            self.colours = {}
+            with open(self.colour_conf) as file:
+                for line in file.readlines():
+                    split = line.split(":")
+                    if len(split) <= 1:
+                        continue
+                    key, value = split
+                    self.colours[key.strip()] = value.strip()
+
+                if "default" not in self.colours.keys():
+                    self.colours["default"] = "graphite"
+        else:
+            with open(self.colour_conf, "w+") as file:
+                for line in self.colours.items():
+                    file.write(f"{line[0]}: {line[1]}\n")
+
         self.session = requests.Session()
         self.session.verify = False
         self.credentials = {"username": username, "password": password}
         self.login()
-        if self.successful_login:
+        if self.successful_login():
             print("Successful login")
         else:
             print("Login failed")
+            quit()
 
     def login(self):
         sso_login = self.session.get(self.URLS["sso-login"])
@@ -68,18 +104,10 @@ class Fetcher:
         return data
 
     def get_colour(self, name):
-        class_colour = {
-            "Home": 8,  # yellow
-            "Physics": 2,
-            "Mathematics": 9,  # dark blue
-            "Pastoral": 8,  # yellow
-            "Engineering": 5,
-            "Studies": 10,  # religon
-            "English": 6,
-            "Chemistry": 3,
-            "Food": 10,
-        }
-        return class_colour.get(name, 8)
+        return self.colour_to_code.get(
+            self.colours.get(name, self.colours["default"]),
+            self.colour_to_code[self.colours["default"]],
+        )
 
     def get_simple_dates(self, dates):
         dates_data = self.get_dates(dates)
@@ -121,6 +149,7 @@ class Fetcher:
                     "end_time": self.time_to_datetime(event["endDateTime"]["date"]),
                     "timezone": event["startDateTime"]["timezone"].title(),
                     "room": "",
+                    "colour": self.get_colour("event"),
                 }
                 for event in events
                 if event["eventType"] == "event"
