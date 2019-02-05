@@ -52,7 +52,7 @@ class Fetcher:
                     if len(split) <= 1:
                         continue
                     key, value = split
-                    self.colours[key.strip()] = value.strip()
+                    self.colours[key.strip()] = value.strip().lower()
 
                 if "default" not in self.colours.keys():
                     self.colours["default"] = "graphite"

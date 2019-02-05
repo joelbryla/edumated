@@ -54,6 +54,26 @@ def parseargs():
 
     colour_conf_file = os.path.join(args.conf_folder, "colour_config.txt")
 
+    if not args.end_date:
+        args.end_date = (
+            args.start_date
+            + datetime.timedelta(days=args.days)
+            - datetime.timedelta(days=1)
+        )
+
+        if args.weeks:
+            args.end_date = (
+                args.start_date
+                + datetime.timedelta(weeks=args.weeks)
+                - datetime.timedelta(days=1)
+            )
+
+    if args.reset:
+        rmtree(args.conf_folder)
+
+    if not os.path.isdir(args.conf_folder):
+        os.mkdir(args.conf_folder)
+
     if not os.path.isfile(colour_conf_file):
         with open(colour_conf_file, "w+") as file:
             for line in default_colours.items():
@@ -78,26 +98,6 @@ run edumated to generate folder and file
         if os.name == "nt":
             os.startfile(colour_conf_file)
         quit()
-
-    if not args.end_date:
-        args.end_date = (
-            args.start_date
-            + datetime.timedelta(days=args.days)
-            - datetime.timedelta(days=1)
-        )
-
-        if args.weeks:
-            args.end_date = (
-                args.start_date
-                + datetime.timedelta(weeks=args.weeks)
-                - datetime.timedelta(days=1)
-            )
-
-    if args.reset:
-        rmtree(args.conf_folder)
-
-    if not os.path.isdir(args.conf_folder):
-        os.mkdir(args.conf_folder)
 
     return args
 
