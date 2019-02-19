@@ -77,9 +77,15 @@ class CalendarTool:
 
     def del_day(self, date):
         for event in self.cal_events:
-            event_date = datetime.datetime.strptime(
-                event["start"]["dateTime"].split("+")[0], "%Y-%m-%dT%H:%M:%S"
-            ).date()
+            time_dict = event["start"]
+            if "dateTime" in time_dict.keys():
+                event_date = datetime.datetime.strptime(
+                    event["start"]["dateTime"].split("+")[0], "%Y-%m-%dT%H:%M:%S"
+                ).date()
+            elif "data" in time_dict.keys():
+                event_date = datetime.datetime.strptime(
+                    event["start"]["date"].split("+")[0], "%Y-%m-%d"
+                ).date()
 
             if event_date == date.date():
                 self.service.events().delete(
