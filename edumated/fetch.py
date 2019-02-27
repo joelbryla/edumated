@@ -117,43 +117,53 @@ class Fetcher:
             events = day["events"]
 
             day_data = []
+            for event in events:
+                event_data = {}
+                if event["eventType"] == "class":
+                    event_data = {
+                        "name": event["period"]
+                        + ". "
+                        + re.sub(
+                            "^([1-10])\w+",
+                            "",
+                            "".join(event["activityName"].split("(")[:-1]).replace(
+                                ")", ""
+                            ),
+                        ).strip(),
+                        "colour": self.get_colour(event["activityName"].split(" ")[1]),
+                        "room": event["activityName"].split(" (")[-1].rstrip(")"),
+                        "start_time": self.time_to_datetime(
+                            event["startDateTime"]["date"]
+                        ),
+                        "end_time": self.time_to_datetime(event["endDateTime"]["date"]),
+                        "description": event["links"][0]["href"]
+                        .split("bcc=")[1]
+                        .split("@")[0],
+                        "timezone": event["startDateTime"]["timezone"].title(),
+                    }
 
-            day_data += [
-                {
-                    "name": event["period"]
-                    + ". "
-                    + re.sub(
-                        "^([1-10])\w+",
-                        "",
-                        "".join(event["activityName"].split("(")[:-1]).replace(")", ""),
-                    ).strip(),
-                    "colour": self.get_colour(event["activityName"].split(" ")[1]),
-                    "room": event["activityName"].split(" (")[-1].rstrip(")"),
-                    "start_time": self.time_to_datetime(event["startDateTime"]["date"]),
-                    "end_time": self.time_to_datetime(event["endDateTime"]["date"]),
-                    "description": event["links"][0]["href"]
-                    .split("bcc=")[1]
-                    .split("@")[0],
-                    "timezone": event["startDateTime"]["timezone"].title(),
-                }
-                for event in events
-                if event["eventType"] == "class"
-            ]
+                    if event["period"] == "BS2":
+                        event_data["start_time"] = event_data["start_time"].replace(
+                            hour=7, minute=30
+                        )
+                        event_data["name"] = "BS" + event_data["name"][3:]
 
-            day_data += [
-                {
-                    "name": (event["activityName"]).lstrip("Event: ").strip(),
-                    "colour": self.get_colour(event["activityName"].split(" ")[1]),
-                    "start_time": self.time_to_datetime(event["startDateTime"]["date"]),
-                    "description": "",
-                    "end_time": self.time_to_datetime(event["endDateTime"]["date"]),
-                    "timezone": event["startDateTime"]["timezone"].title(),
-                    "room": "",
-                    "colour": self.get_colour("event"),
-                }
-                for event in events
-                if event["eventType"] == "event"
-            ]
+                elif event["eventType"] == "event":
+                    event_data = {
+                        "name": (event["activityName"]).lstrip("Event: ").strip(),
+                        "colour": self.get_colour(event["activityName"].split(" ")[1]),
+                        "start_time": self.time_to_datetime(
+                            event["startDateTime"]["date"]
+                        ),
+                        "description": "",
+                        "end_time": self.time_to_datetime(event["endDateTime"]["date"]),
+                        "timezone": event["startDateTime"]["timezone"].title(),
+                        "room": "",
+                        "colour": self.get_colour("event"),
+                    }
+
+                day_data.append(event_data)
+
             formatted_data.append(day_data)
 
         return formatted_data
