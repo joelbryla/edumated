@@ -3,16 +3,14 @@ import datetime
 import os
 from shutil import rmtree
 
-
-default_colours = {
-    "default": "graphite",
-    "event": "tomato",
-    "Physics": "sage",
-    "Mathematics": "blueberry",
-    "Engineering": "banana",
-    "Studies": "basil",
-    "English": "tangerine",
-    "Chemistry": "grape",
+TEACHERS = {
+    "blomnicki": "Benjamin Lomnicki",
+    "melhachem": "Marcel El-Hachem",
+    "palvarado": "Patricio Alvarado",
+    "anuttall": "Angela Nuttall",
+    "mstojoski": "Maria Stojoski",
+    "tgould": "Thomas Gould",
+    "gcrowfield": "Grahame Crowfield",
 }
 
 
@@ -107,3 +105,12 @@ def daterange(start_date, end_date):
     for n in range(int((end_date - start_date).days) + 1):
         dates.append(start_date + datetime.timedelta(n))
     return dates
+
+
+def extract_credentials():
+    username = input("Username: ")
+    password = getpass(prompt="Password: ")
+    calendar_id = input("Google Calendar ID: ")
+    with open(conf_file, "w") as f:
+        f.write("\n".join([username, password, calendar_id]))
+    return username, password, calendar_id

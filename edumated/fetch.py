@@ -8,6 +8,8 @@ import requests
 import urllib3
 from tqdm import tqdm
 
+from .util import TEACHERS
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
@@ -24,6 +26,8 @@ class Fetcher:
         "day": "https://edumate.rosebank.nsw.edu.au/rosebank/web/app.php/admin/get-day-calendar/{}/next",
     }
     MAX_WORKERS = 20
+    EDUMTE_RE = r"^\S+ (.*) (\d+|\w+|\d+\w+) \((\w\d{3}|.*).*\).*"
+    EDUMATE_FMT = "%Y-%m-%d %H:%M:%S.000000"
 
     colour_to_code = {
         "tomato": 11,
@@ -110,57 +114,54 @@ class Fetcher:
         )
 
     def get_simple_dates(self, dates):
-        dates_data = self.get_dates(dates)
-
         formatted_data = []
-        for day in dates_data:
-            events = day["events"]
-
+        for day in self.get_dates(dates):
             day_data = []
-            for event in events:
-                event_data = {}
+            for event in day["events"]:
                 if event["eventType"] == "class":
+                    match = re.match(self.EDUMTE_RE, event["activityName"])
+                    subject = match.group(1) if match else event["activityName"]
+                    room = match.group(3) if match else None
+                    start = self.time_to_datetime(event["startDateTime"]["date"])
+                    end = self.time_to_datetime(event["endDateTime"]["date"])
+
+                    if "href" in event["links"][0].keys():
+                        *_, email = event["links"][0]["href"].split("=")
+                        abreviated, *_ = email.split("@")
+                        teacher = TEACHERS.get(abreviated, abreviated)
+                    else:
+                        teacher = None
+
+                    # Edumate says extension classes start at 8:13
+                    if event["period"] == "BS2":
+                        start = start.replace(hour=7, minute=30)
+
                     event_data = {
-                        "name": event["period"]
-                        + ". "
-                        + re.sub(
-                            "^([1-10])\w+",
-                            "",
-                            "".join(event["activityName"].split("(")[:-1]).replace(
-                                ")", ""
-                            ),
-                        ).strip(),
-                        "colour": self.get_colour(event["activityName"].split(" ")[1]),
-                        "room": event["activityName"].split(" (")[-1].rstrip(")"),
-                        "start_time": self.time_to_datetime(
-                            event["startDateTime"]["date"]
-                        ),
-                        "end_time": self.time_to_datetime(event["endDateTime"]["date"]),
-                        "description": event["links"][0]["href"]
-                        .split("bcc=")[1]
-                        .split("@")[0],
+                        "name": subject,
+                        "colour": self.get_colour(subject),
+                        "room": room,
+                        "start_time": start,
+                        "end_time": end,
+                        "description": teacher,
                         "timezone": event["startDateTime"]["timezone"].title(),
                     }
-
-                    if event["period"] == "BS2":
-                        event_data["start_time"] = event_data["start_time"].replace(
-                            hour=7, minute=30
-                        )
-                        event_data["name"] = "BS" + event_data["name"][3:]
 
                 elif event["eventType"] == "event":
+                    match = re.match(self.EDUMTE_RE, event["activityName"])
                     event_data = {
-                        "name": (event["activityName"]).lstrip("Event: ").strip(),
+                        "name": match.group(1) + " " + match.group(2),
                         "colour": self.get_colour(event["activityName"].split(" ")[1]),
                         "start_time": self.time_to_datetime(
                             event["startDateTime"]["date"]
                         ),
-                        "description": "",
+                        "description": None,
                         "end_time": self.time_to_datetime(event["endDateTime"]["date"]),
                         "timezone": event["startDateTime"]["timezone"].title(),
-                        "room": "",
+                        "room": None,
                         "colour": self.get_colour("event"),
                     }
+                else:
+                    event_data = {}
 
                 day_data.append(event_data)
 
@@ -176,7 +177,7 @@ class Fetcher:
 
     def time_to_datetime(self, time):
         # "2019-02-01 08:42:00.000000"
-        return datetime.strptime(time, "%Y-%m-%d %H:%M:%S.000000")
+        return datetime.strptime(time, self.EDUMATE_FMT)
 
     def __repr__(self):
         return f"<Fetcher username={self.credentials['username']} password=...>"
