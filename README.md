@@ -9,7 +9,7 @@ Run
 `pip install edumated`
 
 Or to get the bleeding edge version
-`pip install git+https://github.com/Ninjakow/edumated`
+`pip install git+https://github.com/joelbryla/edumated`
 
 ### Authentication
 To be able to use this tool you'll first have to create a calendar that you will

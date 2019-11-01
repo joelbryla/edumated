@@ -18,7 +18,7 @@ def main():
 
     if not path.isfile(conf_file):
         username = input("Username: ")
-        password = getpass(prompt="Password: ")
+        password = getpass(prompt="Password: ").replace("%", "%25")
         calendar_id = input("Google Calendar ID: ")
         with open(conf_file, "w") as f:
             f.write("\n".join([username, password, calendar_id]))

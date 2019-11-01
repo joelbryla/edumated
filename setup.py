@@ -2,7 +2,7 @@ import setuptools
 from edumated.__version__ import __author__, __title__, __version__
 
 setuptools.setup(
-    name="edumated",
+    name=__title__,
     version=__version__,
     author=__author__,
     author_email="",

@@ -85,7 +85,7 @@ run edumated to generate folder and file
     Format is:
         SUBJECT: COLOUR
 
-    SUBJECT: the first word of a subject (eg. English Advanced = English, Food Technology = Food, ect.)
+    SUBJECT: the first word of a subject (eg. English Advanced : English, Food Technology : Food, ect.)
             also includes "default" and "event" options
     
     COLOUR: google calendar colour names
