@@ -8,7 +8,7 @@ import requests
 import urllib3
 from tqdm import tqdm
 
-from .util import TEACHERS
+from .util import TEACHERS, extract_teacher
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -115,22 +115,33 @@ class Fetcher:
 
     def get_simple_dates(self, dates):
         formatted_data = []
+        skip = []  # due to double periods
         for day in self.get_dates(dates):
             day_data = []
-            for event in day["events"]:
+            for index, event in enumerate(day["events"]):
+                if event in skip:
+                    continue
                 if event["eventType"] == "class":
                     match = re.match(self.EDUMTE_RE, event["activityName"])
                     subject = match.group(1) if match else event["activityName"]
                     room = match.group(3) if match else None
                     start = self.time_to_datetime(event["startDateTime"]["date"])
                     end = self.time_to_datetime(event["endDateTime"]["date"])
+                    teacher = extract_teacher(event["links"])
 
-                    if "href" in event["links"][0].keys():
-                        *_, email = event["links"][0]["href"].split("=")
-                        abreviated, *_ = email.split("@")
-                        teacher = TEACHERS.get(abreviated, abreviated)
-                    else:
-                        teacher = None
+                    if event["period"].isdigit() and int(event["period"]) % 2:
+                        next_event = day["events"][index + 1]
+                        match = re.match(self.EDUMTE_RE, next_event["activityName"])
+                        next_subject = match.group(1) if match else event["activityName"]
+                        if subject == next_subject:
+                            skip.append(next_event)
+                            next_room = match.group(3) if match else None
+                            next_teacher = extract_teacher(event["links"])
+                            end = self.time_to_datetime(next_event["endDateTime"]["date"])
+                            if next_room != room:
+                                room += f", {next_room}"
+                            if next_teacher != teacher:
+                                teacher += f", {next_teacher}"
 
                     # Edumate says extension classes start at 8:13
                     if event["period"] == "BS2":

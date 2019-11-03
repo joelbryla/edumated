@@ -11,6 +11,7 @@ TEACHERS = {
     "mstojoski": "Maria Stojoski",
     "tgould": "Thomas Gould",
     "gcrowfield": "Grahame Crowfield",
+    "amakam": "Albert Makram"
 }
 
 
@@ -107,10 +108,10 @@ def daterange(start_date, end_date):
     return dates
 
 
-def extract_credentials():
-    username = input("Username: ")
-    password = getpass(prompt="Password: ")
-    calendar_id = input("Google Calendar ID: ")
-    with open(conf_file, "w") as f:
-        f.write("\n".join([username, password, calendar_id]))
-    return username, password, calendar_id
+def extract_teacher(links):
+    if "href" in links[0].keys():
+        *_, email = links[0]["href"].split("=")
+        abreviated, *_ = email.split("@")
+        return TEACHERS.get(abreviated, abreviated)
+    else:
+        return None
