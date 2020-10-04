@@ -8,7 +8,7 @@ import requests
 import urllib3
 from tqdm import tqdm
 
-from .util import TEACHERS, extract_teacher
+from .util import extract_teacher
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -159,6 +159,8 @@ class Fetcher:
 
                 elif event["eventType"] == "event":
                     match = re.match(self.EDUMTE_RE, event["activityName"])
+                    if match is None:
+                        name = match.group(1) + " " + match.group(2) if match else event["activityName"]
                     event_data = {
                         "name": match.group(1) + " " + match.group(2),
                         "colour": self.get_colour(event["activityName"].split(" ")[1]),

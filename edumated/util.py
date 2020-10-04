@@ -3,16 +3,7 @@ import datetime
 import os
 from shutil import rmtree
 
-TEACHERS = {
-    "blomnicki": "Benjamin Lomnicki",
-    "melhachem": "Marcel El-Hachem",
-    "palvarado": "Patricio Alvarado",
-    "anuttall": "Angela Nuttall",
-    "mstojoski": "Maria Stojoski",
-    "tgould": "Thomas Gould",
-    "gcrowfield": "Grahame Crowfield",
-    "amakam": "Albert Makram"
-}
+TEACHERS = {}
 
 
 def parseargs():
@@ -52,6 +43,14 @@ def parseargs():
     args = parser.parse_args()
 
     colour_conf_file = os.path.join(args.conf_folder, "colour_config.txt")
+    teachers = os.path.join(args.conf_folder, "teachers.txt")
+
+    if os.path.isfile(teachers):
+        for line in open(teachers).readlines():
+            split = line.strip().split(":")
+            if len(split) <= 1:
+                continue
+            TEACHERS[split[0]] = split[1]
 
     if not args.end_date:
         args.end_date = (
